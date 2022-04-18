@@ -1,0 +1,155 @@
+=================================================================================
+Autor: Dawid Dobrowolski,                                      Krakow, 01.06.2021
+=================================================================================
+
+* Zawartosc:
+============
+
+Katalog zawiera program w jezyku C z Zestawu 09 dotyczącego watkow:
+---------------------------------------------------------------------------------
+I.Program jest implementacja wzajmenego wykluczania się wątków z użyciem muteksów.
+  Dla demonstracji użyte zostały instrukcje sterujące konsoli.
+
+---------------------------------------------------------------------------------
+
+* Jak uruchomic programy:
+=========================
+Katalog zawiera program Makfile do kompilacji oraz linkowania powyzszych
+programow, a takze jego czyszczenia.
+
+  ->Aby skompilowac wszystkiego programy,nalezy wykonac:
+        make all
+
+  ->Aby wyczyscic zawartosc katalogu (usunac zbedne pliki), nalezy wykonac:
+        make clean
+
+---------------------------------------------------------------------------------
+
+* Odpowiedzi na pytania do zestawu:
+===================================
+I     Czym się różni wątek od procesu?
+
+      Wątki to tzw."lekkie procesy".Wątki wymagają mniejszych zasobów do działania,
+      różnica polega na tym, że działające wątki w danym procesie współdzielą
+      przestrzeń adresową oraz inne struktury systemowe a procesy posiadają
+      niezależne zasoby.
+
+      
+
+II    Opisać działanie, argumenty i wartość zwracaną przez funkcję pthread_create().
+
+      Funkcja pthread_create() tworzy nowy wątek, który zostaje dodany do procesu.
+      Nowo stworzony wątek będzie działał razem z poprzednio utworzonymi.
+
+      Deklaracja funkcji pthread_create:
+      int pthread create(pthread_t *pthreadID,const pthread_attr_t *attr,
+                          void * (*start_fun) (void *), void *arg);
+
+  pthread_t *pthreadID      - wskaźnik na obiekt typu pthread_t, która będzie
+                              niepowtarzalnym identyfikatorem wątku
+
+  const pthread_attr *attr  - dynamicznie rezerwowana struktura atrybutów wątku
+                              (nadanie jako drugiego argumentu NULL ustawi
+                              domyślne atrybuty systemu)
+
+  void *(*start_fun)(void *)- wskaznik na definiowaną przez użytkownika funkcje,
+                              która będzie wykonywana jako nowy wątek
+
+  void *arg                 - wskaznik na rzeczywisty argument przekazywany do
+                              funkcji definiowanej przez uzytkownika
+
+
+      Wartość zwracana przez funkcje:
+
+      Funkcja pthread_create w przypadku pomyślnego utworzenia wątku zwraca 0,
+      natomiast w przypadku błędu zwaraca wartość niezerową.
+
+
+III   Funkcja pthread_join() jest odpowiednikiem której funkcji dla procesów?
+
+      Funkcja pthread_join() jest wątkowym odpowiednikiem funkcji wait() dla
+      procesów.
+      Funkcja ta czeka na zakończenie danego wątku, analogicznie do funkcji wait.
+
+
+IV    Czym się różnią muteksy od semaforów?
+
+      Mutex to semafor binarny o odwróconych wartościach:
+
+      0 - odblokowany
+
+      1 - zablokowany
+
+      MUTEX - MUTal EXclusion semaphore - muteks wzajemne wykluczanie
+
+      Semafor może dopuścić wiele wątków, mutex jest zawsze binarny więc może
+      dopuścić jednej wątek(wzajemne wykluczanie).
+
+V     Jak stworzyć muteks (dwa sposoby)?
+
+      I SPOSÓB
+
+              Aby stowrzyć mutex o np. nazwie Mutex wystarczy następująca def.
+
+              pthread_mutex_t Mutex = [PREDEFINIOWANA STAŁA TRYBU]
+
+      II SPOSÓB
+
+              Do inicjowania muteksów służy funkcja pthread_mutex_init().
+
+              Deklaracja funkcji pthread_mutex_init:
+              int pthread mutex init(pthread mutex t *pmutex,
+                                     const pthread mutexattr t *attr);
+
+              Pierwszym argumentem funkcji jest wskaźnik na muteks, drugim
+              natomiast wcześniej przygotowany obiekt atrybutów.
+
+
+VI    Opisać działanie operacji, które możemy wykonać na muteksach.
+
+      1)Zamykanie mutexu - służy do tego funkcja pthread_lock(), wywołanie jej
+                           dla mutexu już zamkniętego spowoduje zablokowanie
+                           wątku do czasu otwaracia mutexu.
+                           Natomiast dla otwartego muteksu spowoduje jego
+                           zamknięcie i zawłaszczenie.
+
+      2)Otwieranie mutexu - służy do tego funkcja pthread_mutex_unlock(),
+                            operacja ta może zostać zrealizowana tylko przez
+                            wątek, który zamknął dany mutex.
+
+      3)Zamykanie nieblokujące - służy do tego funkcja pthread_mutex_trylock(),
+                                 która działa podobnioe do pthread_mutex_lock,
+                                 jednakże nie powoduje blokowania wywołującego
+                                 ją wątku, jeśli dany mutex jest już zamknięty
+
+      4)Usuwanie mutexu        - służy do tego funkcja pthread_mutex_destroy()m
+                                 tak jak sama nazwa funkcji wskazuje, usuwa ona
+                                 wskazany mutex.
+
+VII   Dlaczego musimy zdefiniować makro _REENTRANT?
+
+      Jeśli chcemy korzystać z biblioteki funkcji wątkowych to używamy między
+      innymi dyrektywy preprocesora makra _REENTRANT oznacza ona, że dany kod
+      jest wielokrotnego użytku, czyli taki do którego możemy wiele razy wchodzić.
+
+      Mówi, że wykorzystywane są te wersje funkcji bibliotecznych, które są
+      "thread safe", jest to ważne bo różne wątki współdzielą między sobą pamięć.
+      Włącza też odrazu makro _POSIX_C_SOURCE
+
+
+VIII  Co oznacza typ void * (*) ()?
+
+      Funkcja ma parametr w postaci wskaźnika na void i zwraca wskaźnik na typ
+      void.
+
+IX    Co to sa operacje atomowe? Czy są konieczne?
+
+      Operacja, która na pewnym poziomie abstrakcji jest niepodzielna.
+      Instrukcje atomowe to instrukcje, które wykonuje się w całości bez możliwości
+      przerwania przez instrukcje innegro procesu.
+
+      Np. wykonanie programu współbieżnego polega na wykonaniu ciągu instrukcji
+      atomowych przez przeplatanie się instrukcji poszcególnych procesów.
+
+
+=================================================================================

@@ -1,0 +1,118 @@
+=================================================================================
+Autor: Dawid Dobrowolski,                                      Krakow, 29.03.2021
+=================================================================================
+
+* Zawartosc:
+============
+
+Katalog zawiera trzy programy w jezyku C z Zestawu 02 dotyczącego procesów:
+---------------------------------------------------------------------------------
+I.    Generuje odopowiednie drzewa genealogiczne procesów. Oba programy są modyfikacją
+      programu procesy.c.
+
+      Zadanie składa się z dwóch programów
+
+      1)  drzewko1.c              - program główny
+      2)  procinfo.c procinfo.h   - funkcja wypisująca identyfikatory       
+          
+      1)  drzewko2.c              - program główny
+      2)  procinfo.c procinfo.h   - funkcja wypisująca identyfikatory   
+
+II.   Modyfikacja programy procesy.c, komunikaty procesów potomnych wypisywane są
+      przez program uruchamiany funkcją execv().
+
+      Program sklada sie z 3 modulów:
+
+      1)  macierzysty.c           - program glowny
+      2)  potomny.c               - program inicjowany przez execv()
+      3)  procinfo.c procinfo.h   - funkcja wypisująca identyfikatory   
+
+III.  Zawiera trzy programy, które tworzą odpowiednio: proces zombii, proces osierocony
+      oraz program execute.c który sprawdza zasadę działania funkcji execl().
+
+      Program generujący proces zombi składa się z 1 modułu:
+      1)  zombi.c                - program glowny
+      
+      Program generujący proces osierocony składa się z 1 modułu:
+      1)  orphan.c               - program glowny
+
+      Program wywołujący funkcje execl() składa się z 1 modułu:
+      1)  execute.c              - program glowny
+
+
+
+---------------------------------------------------------------------------------
+
+* Jak uruchomic programy:
+=========================
+Katalog zawiera program Makfile do kompilacji oraz linkowania powyzszych
+programow, a takze jego czyszczenia.
+
+  ->Aby skompilowac wszystkiego programy,nalezy wykonac:
+        make all
+
+  ->Aby wyczyscic zawartosc katalogu (usunac zbedne pliki), nalezy wykonac:
+        make clean
+
+---------------------------------------------------------------------------------
+
+* Odpowiedzi na pytania do zestawu:
+===================================
+I       Ile teraz powstaje procesów w zadaniu 2. i dlaczego?
+
+        W zadaniu 2, oprócz procesu macierzystego powstają jego 3 procesy potomne,
+        razem więc mamy 4 procesy. Dzieje się tak z powodu implementacji funkcji
+        execv(), która inicjuje proces na podstawie wskazanego programu, tak więc
+        proces macierzysty przechodząć przez pętle 3 razy utworzy swoją trójkę
+        procesów potomnych, każdy z procesów potomnych natomiast wywoła funkcję
+        execv(), która zainicjuje proces na podstawie wskazanego programu potomny.x
+        w ten sposób tylko ich identyfikatory zostają wypisane, natomiast nie zostaną
+        utworzone od nich ich procesy potomne ponieważ exec "popełnia samobójstwo". 
+
+II      Ile procesów powstanie przy n-krotnym wywołaniu funkcji fork-exec jak w 
+        zadaniu 2. i dlaczego?
+        
+        Po n-krotnym wywołaniu funkcji fork-exec powstanie n-procesów, proces
+        macierzysty przejdzie przez pętle n-razy tworząc n-procesów potomnych,
+        każdy z procesów potomnych wywoła funkcję execv() która zainicjuje 
+        proces na podstawie wskazanego programu. Dzieci procesów potomnych
+        nie zostaną utworzone gdyż exec() "popełnia samobójstwo".
+
+
+III     Co robi funkcja execl()? Czym się różni od funkcji execv()?
+        
+        Funkcja execl() służy do ponownego zainiicjowania procesu na podstawie
+        wskazanego, jako argument, programu. Execl() należy do jednej z odmiany
+        funkcji exec, otóż przyjmuje ona argumenty w postaci listy. 
+
+        Funkcja execl(), różni się od funkcji execv() tym, że przyjmuje 
+        argumenty w postaci listy, natomiast execv() w postaci tablicy.
+
+IV      Jaką rolę pełni proces init lub systemd?
+
+        Są pierwszymi z uruchamianych programów w trakcie procesu uruchamiania
+        systemu.Uruchamiają podstawowe serwisy systemu i przygotowują środowisko
+        do działania.        
+                
+        Między innymi "adoptują" osierocone procesy, których proces macierzysty,
+        zakończył się przed ich procesem potomnym, w takiej sytuacji operacje
+        czekania spełniają odpowiednio procesy init lub systemd.
+
+
+V       Co to są procesy zombi?
+        
+        Proces zombi to proces które zakończył swoje działanie ale nie czeka 
+        na niego żadne proces macierzysty.Pomimo,że proces taki nie wykonuje
+        już żadnego działania, to zajmuje miejsce w tabeli procesów.
+
+
+
+VI      Co to są procesy osierocone?
+        
+        Proces osierocony to proces, którego proces macierzysty zakończył
+        swoje działanie przed nim samym.
+        Takie procesy są "adoptowane" przez proces init, który wykonuje dla nich
+        operacje czekania.
+
+
+=================================================================================

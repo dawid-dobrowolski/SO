@@ -1,0 +1,135 @@
+=================================================================================
+Autor: Dawid Dobrowolski,                                      Krakow, 01.05.2021
+=================================================================================
+
+* Zawartosc:
+============
+
+Katalog zawiera 4 programy w jezyku C z Zestawu 06 dotyczącego semaforów:
+---------------------------------------------------------------------------------
+I.Program jest testem sprawdzającym funkcjonowanie biblioteki statycznej
+  dotyczącej semaforów.
+
+  Program składa się z 2 modułów:
+                                  1)  test.c  - program główny
+                                  2)  sem.h   - plik nagłówkowy
+
+II.Program przyjmuje jeden jednoliterowy argument, który przy użyciu biblioteki
+   statycznej wykonuje poniższe operacje na semaforze ogólnym:
+
+
+ i -   Inicjuje semafor i wypisuje o nim informacje.
+ r -   Usuwa semafor.
+ p -   Opuszcza semafor i wypisuje o nim informacje.
+ v -   Podnosi semafor i wypisuje o nim informacje.
+ q -   Wypisuje informacje o semaforze.
+
+    Program składa się z 2 modułów:
+                                 1)  semuse.c  - program główny
+                                 2)  sem.h     - plik nagłówkowy
+
+III.Program jest implementacją zadania wzajemnego wykluczania dla procesów.
+    Jednocześnie co najwyżej jeden proces programu prog.x znajduje się
+    w sekcji krytycznej.
+    Program przyjmuje 3 argumenty:nazwe programu prog.x oraz liczbe procesów
+    potomnych które ma stworzyć oraz liczbę sekcji krytycznych dla każdego
+    z tych procesów.
+
+    Program składa się z 3 modułów:
+                                    1)  powielacz.c  - program główny
+                                    3)  prog.c       - program inicjowany przez execl
+                                    2)  sem.h        - plik nagłówkowy
+
+
+---------------------------------------------------------------------------------
+
+* Jak uruchomic programy:
+=========================
+Katalog zawiera program Makfile do kompilacji oraz linkowania powyzszych
+programow, a takze jego czyszczenia.
+
+  ->Aby skompilowac wszystkiego programy,nalezy wykonac:
+        make all
+
+  ->Aby wyczyscic zawartosc katalogu (usunac zbedne pliki), nalezy wykonac:
+        make clean
+
+---------------------------------------------------------------------------------
+
+* Odpowiedzi na pytania do zestawu:
+===================================
+I   Do czego służą semafory w systemach UN*X?
+
+II  Opisz operacje, które można wykonać na semaforach.
+
+    Semafor to abstrakcyjny typ danych, który posiada stan(liczba naturalna),
+    co pozwala wykonywaćna nim dane operacje:
+
+                          1) nP/P  -  opuszczenie semafora, powoduje zablokowanie
+                                      semaforu, jego zajęcie.
+                                      Operacja P jest blokująca, natomiast
+                                      nP jest operacją nie blokującą.
+
+                                      P   - w momencie zablokowania przez inny proces
+                                            będzie czekał aż dostaniemy dostęp.
+
+                                      nP  - w momencie braku dostępu zwróci
+                                            informacje o fakcie zablokowania,
+                                            a w przypadku dostępu uzyskamy dostęp
+                                            do sekcji krytycznej.
+
+                          2) V  -     podniesienie semaforu, powoduje otwarcie dostępu
+                                      dla innych procesów do zasobu krytycznego, lub
+                                      odblokowanie.
+
+                          3) Z  -     czekanie na wyzerowanie stanu semafora, czyli
+                                      czeka do czasu aż wartość semafora wyniesie 0.
+
+    W standardzie POSIX nie ma natomiast wsparcia dla operacji Z.
+
+III W jaki sposób niezależne procesy mogą korzystać ze wspólnych semaforów?
+
+    Mogą korzystać przy pomoc semaforów nazwanych, które dostęp mogą uzyskać
+    przy pomocy funkcji sem_open. Aby jednocześnie co najwyżej jeden proces
+    używał semafora można zaimplementować między nimi zadanie wzajemnego
+    wykluczania się procesów.
+
+
+IV   Czym jest biblioteka statyczna? Jakie są jej zalety?
+
+    Biblioteka statyczna to archiwum zawierająca jakieś pliki, które w szczególności
+    są plikami obiektowymi.Do tworzenia i modyfikowania bibliotek statycznych służy
+    narzędzie ar.
+
+    Zalety:
+            1) Łatwość w tworzeniu i modyfikacji biblioteki
+            2) Kontrola poprawności biblioteki
+            3) Dołączane są danego pliku wykonawczego tylko te pliki z biblioteki
+               które zawierają implementacje poszukiwanych funkcji, które nie są
+               zdefiniowane w programie.
+
+V  Jak utworzyć bibliotekę statyczną? Jak jej używać?
+
+Aby utworzyć bibliotekę statyczną musimy:
+
+    1)Stworzyć plik *.c z implementacją funkcji
+
+    2)Stworzyć odpowiedni plik nagłówkowy *.h
+
+    3)Skompilować nasz plik źródłowy *.c do pliku obiektowego *.o
+
+    4)Dodać plik obiektowy .o do biblioteki używająć narzędzia ar
+
+      ar rv lib*.a *.o
+
+Aby użyć biblioteki statycznej w danym programie należy skompilować program
+z odpowiednimi opcjami.
+
+gcc -L. program.x -l*
+
+      gdzie:
+      -L. {dzięki tej opcji gcc będzie szukało biblioteki w katalogu bierzącym}
+      -l* {dołączy bibliotekę o nazwie *}
+
+
+=================================================================================

@@ -1,0 +1,132 @@
+=================================================================================
+Autor: Dawid Dobrowolski,                                      Krakow, 20.03.2021
+=================================================================================
+
+* Zawartosc:
+============
+
+Katalog zawiera cztery programy w jezyku C z Zestawu 01 dotyczącego procesów:
+---------------------------------------------------------------------------------
+I.    Program wypisuje identyfikatory UID, GIT, PID, PPID, PGID aktualnego
+      procesu.
+
+      Program sklada sie z 2 modulow:
+      1)  main.c                  - program glowny, wywolujacy funkcje procinfo
+      2)  procinfo.c procinfo.h   - funkcja wypisująca identyfikatory
+
+II.   Program kopiuje zawartosc jednego pliku do drugiego z wykorzystaniem
+      funkcji open,read,write oraz odpowiednich praw dostepu.
+
+      Program sklada sie z 1 modulu:
+      1)  kopiuj.c  - program glowny
+
+III.  Program tworzy przy pomocy funkcji fork procesy potomne, program na
+      wyjsciu wypisuje identyfikatory zarowno procesu macierzystego jak i jego
+      procesow potomnych, wypis kolejnych procesow potomnych jest uporzadkowany
+      pokoleniami.
+
+      Program sklada sie z 2 modulow:
+      1)  procesy.c               - program glowny
+      2)  procinfo.c  procinfo.h  - funkcja wypisująca identyfikatory
+
+IV.   Program jest modyfikacja programu procesy.c, zmienia PPID kazdego procesu
+      potomnego w taki sposob, ze staje sie on liderem swojej wlasnej grupy.
+
+      Program sklada sie z 2 modulow:
+      1)  lider.c                 - program glowny
+      2)  procinfo.c  procinfo.h  - funkcja wypisująca identyfikatory
+
+
+---------------------------------------------------------------------------------
+
+* Jak uruchomic programy:
+=========================
+Katalog zawiera program Makfile do kompilacji oraz linkowania powyzszych
+programow, a takze jego czyszczenia.
+
+  ->Aby skompilowac wszystkiego programy,nalezy wykonac:
+        make all
+
+  ->Aby wyczyscic zawartosc katalogu (usunac zbedne pliki), nalezy wykonac:
+        make clean
+
+---------------------------------------------------------------------------------
+
+* Odpowiedzi na pytania do zestawu:
+===================================
+I.    Opisac dokładnie jak dziala funkcja fork()?
+
+      Funkcja fork() w chwili wywolania tworzy idelna kopie procesu macierzystego,
+      kopiujac jego obszary pamieci,wartosc zmiennych. Proces macierzysty tuż po
+      wywołaniu fork() kontynuuje swoje działanie, proces potomny natomiast
+      rozpoczyna swoje dzialenie tuż po wywołaniu funkcji, wartosc zwracana przez
+      fork dla procesy macierzystego i potomnego jest rozna.
+      Tak wiec proces macierzysty i proces potomny powstaly w procesie tworzenia
+      kopii procesu, roznia sie od siebie wartoscia zwracana przez fork oraz
+      numerem identyfikatora PID.
+
+      Ze wzgledu na kosztownosc operacji fork, posiada on usprawnienia takie jak
+      np."copy-on-write", które polega na tym ze dopoki nie ma takiej koniecznosci
+      to dane nie sa kopiowane, tylko korzystaja z nich wspolnie, kopia jest
+      wykonywana w momencie kiedy ktorys z procesow jest modyfikowany.
+
+
+II.   Ile powstaje procesów w zadaniu procesy i dlaczego?
+
+      W zadaniu „procesy” powstaje razem 8 procesów, jeden proces macierzysty oraz
+      7 procesów potomnych, wynika to z zasady działania funkcji jaką jest fork(),
+      w zadaniu „procesy” wywołujemy fork 3 razy, a za każdym razem funkcja tworzy
+      dokładnie jeden idelany klon procesu macierzystego, w kolejnych iteracjach
+      procesy potomne również 	wywołują funkcję fork i tworzą od siebie swoje
+      własne klony. Można więc procedurę 	funkcji fork(), przyrównać do struktury
+      drzewa gdzie w każdej iteracji każdy wierzchołek 	będzie tworzył nowe
+      odgalezienie.
+
+      Jednak co ważne: fork() nie podwaja liczby procesów, przy każdorazowym
+      wywołaniu funkcja ta tworzy dokładnie jeden proces potomny.
+
+
+III.  Ile procesów powstanie przy n-krotnym wywołaniu funkcji fork i dlaczego?
+
+      Przy n-krotnym wywołaniu fork, powstanie 2^n procesów, w każdej iteracji
+      każdy z procesów, tworzy jeden dodatkowy proces, tak więc liczba procesów
+      w każdej iteracji rośnie wykładniczo(podstawa dwójki)(co nie znaczy, że
+      fork podwaja liczbę procesów),mamy proces macierzysty oraz proces potomny
+      przez niego utworzony, takich klonowań będzie się wykonywać n-razy więc
+      funkcja odpowiadająca liczbie tworzonych procesów można opisać wzorem 2^n.
+
+
+
+IV.   Jak używając funkcji sleep i bez odwoływania się do funkcji wait() zapewnić
+      aby procesy macierzyste konczyły się dopiero po procesach potomnych.
+
+      Aby procesy macierzyste konczyly sie dopiero po procesach potomnych, w defaulcie
+      nalezalo by ustawic sleep(powiedzmy na 2 sekundy), oraz taka sama wartosc sleep
+      w case 0 zaraz po wypisaniu identyfikatorow procesow potomnych.
+
+V.    Jaką wartość zwraca open()?
+
+      Funkcja open(), w przypadku pomyślnego otwarcia pliku zwraca małą,
+      nieujemną liczbę całkowitą. W przypadku błędu zwraca -1, w takim przypadku
+      odpowiednio ustawiane jest errno.
+
+
+VI.   Jaką wartość zwraca read() i write()?
+
+      Funkcja read() przy pomyślnym zakończeniu operacji zwróci nieujemną liczbe
+      calkowita,wskazującą na liczbę odczytanych bajtow(zero oznacza koniec pliku).
+      W przeciwynym razie zwroci wartosc -1 i ustawi errno aby ta wskazala na blad.
+      Nie jest bledem jesli zwrocona liczba jest mniejsza od zadanych do przeczytania,
+      moze sie tak stac z powodu zblizania sie do konca pliku lub przerwania funkcji
+      przez sygnal.
+
+
+      Funkcja write() podobnie jak w przypadku read przy pomyslnym zakonczeniu
+      zwraca liczbe zapisanych bitow, w przypadku bledu zwracane jest -1 i ustawiane
+      jest odpowiednio errno.
+      Funkcja write moze przy pomyslnej procedurze przeslac mniej bajtow niz plik
+      z ktorego kopiujemy dane, przyczyny tego stanu moga wynikac na przyklad
+      z powodu niewystarczajacej ilosci miejsca na urzadzeniu dyskowym lub przerwaniu
+      funkcji przez np. program obslugi sygnalu.
+
+=================================================================================

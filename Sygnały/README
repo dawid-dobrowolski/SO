@@ -1,0 +1,175 @@
+=================================================================================
+Autor: Dawid Dobrowolski,                                      Krakow, 19.04.2021
+=================================================================================
+
+* Zawartosc:
+============
+
+Katalog zawiera trzy zadania w jezyku C z Zestawu 03 dotyczącego sygnałów:
+---------------------------------------------------------------------------------
+I.    Program umożliwia obsługę sygnałów z możliwościami wykonania domyślnej
+      operacji dla sygnału,ignorowania sygnału oraz przechwycenia i własnej
+      obsługi danego sygnału.
+
+      Program przyjmuje dwa argumenty z linii komend:
+      1)  Rodzaj akcji: d - wykonanie operacji domyślnej dla sygnału
+                        i - ignorowanie sygnału
+                        p - przechwycenie i własna obsługa sygnału
+
+      Zadanie składa się z dwóch modułów
+
+      1)  obsluga.c               - program główny
+      2)  procinfo.c procinfo.h   - funkcja wypisująca identyfikatory
+
+II.   Program tworzy proces potomny w którym poprzez funkcje execl()
+      uruchamia program osbsluga.x i wysyla do niego sygnały poprzez
+      funkcje systemową kill() z procesu macierzystego.
+
+      Program składa sie z 3 modulów:
+
+      1)  wysylaj.c               - program główny
+      2)  obsluga.c               - program inicjowany przez execl()
+      3)  procinfo.c procinfo.h   - funkcja wypisująca identyfikatory
+
+III.  Program grupa.c tworzy proces potomny, który staje się liderem nowej grupy.
+      Tworzy on kilka procesów potomnych, które uruchamiają program do obsługi
+      sygnałów. Z pierwotnego procesu macierzystego wysyłamy sygnał poprzez
+      funkcję kill, po wcześniejszym sprawdzeniu czy ta grupa procesów istnieje.
+      Lider grupy czeka na zakończenie procesów potomnych i zwraca ich status
+      funkcji wait.
+
+      Program składa się 2 modułów :
+      1)grupa.c                   - program główny
+      2)obsluga.c                 - program inicjowany przez execl()
+
+
+---------------------------------------------------------------------------------
+
+* Jak uruchomic programy:
+=========================
+Katalog zawiera program Makfile do kompilacji oraz linkowania powyzszych
+programow, a takze jego czyszczenia.
+
+  ->Aby skompilowac wszystkiego programy,nalezy wykonac:
+        make all
+
+  ->Aby wyczyscic zawartosc katalogu (usunac zbedne pliki), nalezy wykonac:
+        make clean
+
+---------------------------------------------------------------------------------
+
+* Odpowiedzi na pytania do zestawu:
+===================================
+I       Do czego służą sygnały?
+
+        Sygnały umożliwiają asynchroniczne przerwanie działania procesu przez
+        inny proces lub jądro, aby przerwany proces mógł zareagować na określone
+        działanie. Są najprostszą metodą komunikacji międzyprocesowej.
+        Powodują asynchroniczne przerwanie działania procesu w dowolnym momencie
+        i wywołanie funkcji obsługującej sygnał.
+        Informują o zajściu jakiegoś zdarzenia sprzętowego lub softwareowego.
+
+II      Co robi a czego nie robi funkcja signal()?
+
+        Funkcja signal() ustawia obsługę sygnału, mówi co ma się stać kiedy sygnał
+        przyjdzie.
+        Natomiast funkcja signal() nie obsługuje już samego sygnału, również
+        nie wysyła ona sygnału, ponieważ robi to funkcja kill().
+
+III     Jak działa funkcja kill()? Podaj trzy przykłady uwzględniające rolę
+        pierwszego argumentu?
+
+        Funkcja kill() wysyła sygnał do procesu lub grupy procesów. Wysyła sygnał
+        do procesu lub grupy procesów w zależności od pierwszego argumentu
+        funkcji.
+
+        Trzy przykłady uwzględniające rolę pierwszego argumentu:
+
+        1) kill(10,10)  - wysyła sygnał o numerze 10 do procesu o pid=10
+        2) kill(0,10)   - wysyła sygnał o numerze 10 do grupy procesów, do której
+                          należy proces wywołujący kill.
+        3) kill(-10,10) - wysyła sygnał do grupy procesów o PGID=|-10|
+
+IV     Jak sprawdzić czy istnieje proces pid lub grupa pgid i czy możemy do nich
+       wysyłać sygnały?
+
+       Aby to sprawdzić możemy wywołać funkcje kill(0,0), która nie wyślę żadnego
+       sygnału, tylko wykona test sprawdzający istnienie grupy procesów o PGID
+       procesu z poziomu którego wywołamy kill, sprawdzi również czy możemy do
+       nich wysyłać sygnały.Jeśli chcemy sprawdzić istnienie danego procesu,
+       możemy wywołać kill(pid,0), gdzie za pid podajemy PID procesu który chcemy
+       sprawdzić czy istnieje.
+
+
+V      Jaki sens ma wywołanie kill(0, 0)?
+
+       Nie wysyła żadnego sygnału ale sprawdza czy istnieje grupa procesów
+       do której należy proces wywołujący kill().
+
+VI     Jak i dlaczego należy uodpornić proces macierzysty w programie grupa.c
+       na sygnał?
+
+       Proces macierzysty który staje się liderem grupy należy uodpornić na sygnał
+       otrzymany z pierwotnego procesu macierzystego, ponieważ chcemy aby zwracał
+       on status zakończonych jego procesów potomnych.
+       Uodporniamy ten sygnał ustawiając funkcje signal() na ignorowanie sygnału
+       wysyłanego przez proces macierzysty pierwotny.
+
+VII    Jak wznowić proces zatrzymany sygnałem SIGSTOP?
+
+       Można wznowić zatrzymany proces wysyłając do niego sygnał SIGCONT przy
+       pomocy funkcji kill(), podając numer PID zatrzymanego procesu oraz jako
+       drugi argument SIGCONT lub odpowiadający mu numer 18.
+       Można wzonowić również używając komend fg lub bg.
+
+VIII   Opisać sygnał SIGCHLD.
+
+       Sygnał wysyła z procesu potomnego do procesy macierzystego informację
+       o tym, że jego proces potomny zakończył działanie. Wskazuje ogólnie na
+       zmianę stanu proces potomnego, może wskazywać na śmierć potomka, ale
+       również zmiana stanu może wynikać np. z zatrzymania procesu przez inne
+       sygnały jak np. SIGSTOP. Domyślną akcją dla tego sygnału to ignorowanie.
+
+IX     Które sygnały możemy wysłać w terminalu przy użyciu skrótów klawiszowych?
+
+       Ctrl -C lub Delete - służy do zakończenia bieżącego procesu (SIGINT)
+       Ctrl -\            - powoduje wysłanie sygnału SIGQUIT powodującego
+                            zakończenie programu bieżąceego z zapisem obrazu
+                            pamięci.
+       Ctrl -Z            - powoduje zawieszenie procesu(SIGSTOP)
+
+
+X      Jak działa funkcja pause()?
+
+       Funkcja pause() powoduje uśpienie procesu do czasu dostarczenia sygnału,
+       który nie został zignorowany. Funkcja paise zwraca wartość -1 w przypadku
+       przechwycenia sygnału i powrotu funkcji obsługi sygnału. W przypadku porażki
+       nie zwraca nic.
+
+* Opis funkcji i znaczenia czterech wybranych sygnałów, w tym dwóch
+  nieprzechwytywalnych:
+===================================================================
+Sygnały nieprzechwytywalne:
+
+I      SIGKILL  - bezwarunkowe zakończenie procesu, wiążące się z utratą danych
+                  zawartych w danym procesie. Pozwala unicestwić procesy nad którym
+                  użytkownik stracił kontrolę. Sygnał ten nie może być zignorowany
+                  ani przechwycony.
+
+II     SIGSTOP  - zatrzymuje dany proces bez utraty danych, możemy go wykorzystać
+                  w przypadku gdy nasz program uruchamia zbyt wiele procesów naraz.
+                  Sygnał ten również nie może być zignorowany ani przechwycony.
+
+Sygnały przechwytywalne:
+
+I      SIGTERM  - standardowy sygnał poprawnego zamknięcia procesy, wysyłany
+                  domyślnie przy użyciu polecenia kill.Sygnału tego używa się
+                  między innymi przy wyłączeniu calego systemu w celu zakończeniu
+                  wszystkich procesów.
+
+II     SIGSEGV -  sygnał wysyłany po wystąpieniu błędu sprzętowego spowodowanego
+                  niewłaściwą implementacją, naruszeniem ograniczeń pamięci.
+                  Zostaje wysłany do procesu w momencie, gdy na przykład
+                  proces odwołuje się do takiego adresu w pamięci, do którego
+                  nie ma dostępu.
+=================================================================================

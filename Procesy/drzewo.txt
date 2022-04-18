@@ -1,0 +1,36 @@
+Output Zadania Procesy:
+Name = ./procesy.x, UID: 1000, GIT: 1000, PID: 12899, PPID: 12846, PGID: 12899  
+  Proces potomny : UID: 1000, GIT: 1000, PID: 12900, PPID: 12899, PGID: 12899 
+  Proces potomny : UID: 1000, GIT: 1000, PID: 12901, PPID: 12899, PGID: 12899 
+  Proces potomny : UID: 1000, GIT: 1000, PID: 12902, PPID: 12899, PGID: 12899 
+  Proces potomny : UID: 1000, GIT: 1000, PID: 12903, PPID: 12901, PGID: 12899 
+  Proces potomny : UID: 1000, GIT: 1000, PID: 12904, PPID: 12900, PGID: 12899 
+  Proces potomny : UID: 1000, GIT: 1000, PID: 12905, PPID: 12900, PGID: 12899 
+  Proces potomny : UID: 1000, GIT: 1000, PID: 12906, PPID: 12904, PGID: 12899 
+
+Drzewo genealogiczne:
+
+
+                                             [ PID: 12899  ]                             | Pokolenie 0:
+                                             [ PPID: 12846 ]                             |
+                                             [ PGID: 12899 ]                             | 
+                                                    |                                    |	
+				                    |                                    |
+		                _____________________________________________            |
+                               |                    |                        |           |
+                        [ PID:  12901 ]      [ PID:  12900 ]          [ PID:  12902 ]    | Pokolenie 1:
+                        [ PPID: 12899 ]      [ PPID: 12899 ]          [ PPID: 12899 ]    |
+                        [ PGID: 12899 ]      [ PGID: 12899 ]          [ PGID: 12899 ]    |
+                               |                    |                                    |
+         ______________________|                    |                                    |
+        |                            _______________________________________             |
+        |                           |                                       |            |
+        |                           |                                       |            |
+  [ PID:  12903 ]             [ PID:  12904 ]                        [ PID:  12905 ]     | Pokolenie 2:
+  [ PPID: 12901 ]             [ PPID: 12900 ]                        [ PPID: 12900 ]     |
+  [ PGID: 12899 ]             [ PGID: 12899 ]                        [ PGID: 12899 ]     |
+                                    |                                                    |
+                                    |                                                    |
+                             [ PID:  12906 ]                                             | Pokolenie 3:
+                             [ PPID: 12904 ]                                             |
+                             [ PGID: 12899 ]                                             |

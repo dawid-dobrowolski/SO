@@ -1,0 +1,147 @@
+=================================================================================
+Autor: Dawid Dobrowolski,                                      Krakow, 23.04.2021
+=================================================================================
+
+* Zawartosc:
+============
+
+Katalog zawiera jeden program w jezyku C z Zestawu 04 dotyczącego potoków:
+---------------------------------------------------------------------------------
+I.    Program realizuje problem producent-konsument przy użyciu potoków
+      nienazwanych.
+
+      Program składa się z 1 modułu:
+                                    1) prodkons.c - program główny
+
+---------------------------------------------------------------------------------
+
+* Jak uruchomic programy:
+=========================
+Katalog zawiera program Makfile do kompilacji oraz linkowania powyzszych
+programow, a takze jego czyszczenia.
+
+  ->Aby skompilowac wszystkiego programy,nalezy wykonac:
+        make all
+
+  ->Aby wyczyscic zawartosc katalogu (usunac zbedne pliki), nalezy wykonac:
+        make clean
+
+---------------------------------------------------------------------------------
+
+* Odpowiedzi na pytania do zestawu:
+===================================
+I     Co zwraca funkcja pipe()?
+
+      W przypadku sukcesu zwraca zero, natomiast w przypadku błędu zwraca
+      wartość -1.
+
+II    Czym się różni funkcja pipe() od mkfifo()? Co robią te funkcje?
+
+      Funkcja pipe() tworzy potok nienazwany, funkcja mkfifo() tworzy potok
+      nazwany, który widoczny jest w systemie plików.
+      Pipe() tworzy potok nienazwany który zwraca deskryptory do tablicy,
+
+        gdzie:
+            fd[0] - deskryptor do odczytu
+            fd[1] - deskryptor do zapisu
+
+      Potok nazwany utworzony przy pomocy mkfifo() jest natomiast traktowany
+      jako zwykly plik, ktory nalezy otworzyc za pomoca funkcji open().
+      Potok nazwany może łączyć procesy niezależne, a nie tak jak potoki nazwane,
+      tylko procesy pokrewne.
+
+III   Co oznacza akronim FIFO?
+
+      FIFO jest skrótem od pełnej nazwy First In, First Out, Pierwszy na Wejściu,
+      Pierwszy na Wyjściu, w informatyce jest to pewien sposób organizacji
+      strukturą danych, wykorzystywana często jako bufor cykliczny.
+
+IV    Co to jest deskryptor?
+
+      Identyfikator pliku wykorzystywany przez system operacyjny związany z pewną
+      nieujemną liczbą całkowitą. Deskryptor pliku jest zwaracany przez funkcję
+      systemową open.Deskryptor pliku to indeks do przechowywanej przez jądro
+      struktury danych zawierających informacje o wszystkich otwartych plikach.
+      Deskryptory służą do odwoływania się do plików przez niektóre funkcje
+      systemowe.Deskryptory plików procesu macierzystego są dziedziczone przez
+      procesy potomne.
+      Funkcja close zamyka plik tzn. zwalnia używany przez niego deskryptor.
+
+V     Jak i dlaczego zamykamy deskryptory w zadaniu 1.?
+
+      Deskryptory zamykamy przy użyciu funkcji close(),w chwili zakończenia
+      procesu,wszystkie używane prez proces pliki są autmoatycznie zamykane.
+      Jednakże dobrą praktyką jest zamykanie nieużywanych plików ze względów
+      na uniknięcie możliwych problemów, w dalszych etapach programu.
+
+VI    Proszę sprawdzić co się stanie jeżeli nie zamkniemy deskryptorów w zadaniu 1.?
+
+      W zadaniu 1 jeśli nie zamkniemy deskryptorów odziedziczonych po procesie
+      macierzystym, to program po przeniesieniu danych z jednego pliku do drugiego,
+      nie zakończy swojego działania.
+      W przypadku nie zamknięcia innych deskryptorów program również nie zakonczy
+      się pomyślnie.
+
+VII   Jak utworzyć i usunąć potok nazwany z linii komend a jak z poziomu programu?
+
+      Z poziomu programu:
+      ===================================
+      Aby utworzyć potok nazwany w programie używamy funkcji mkfifo():
+
+      int mkfifo(const char *path, mode t mode);
+
+      gdzie:
+            const char *path  - nazwa potoku
+            mode t mode       - prawa dostępu
+
+      Aby usunąć potok nazwany w programie używamy funkcji unlink():
+
+      int unlink(const char *path);
+
+      gdzie:
+            const char *path  - nazwa potoku
+
+      Przykładowa implementacja:
+
+      ...
+      const char* name=argv[3];
+      if(mkfifo(name,RIGHTS)==-1)
+      {
+        perror("mkfifo error");
+        _exit(1);
+      }
+      ...
+      if(unlink(name)==-1)
+      {
+        perror("unlink error");
+        exit(1);
+      }
+      ...
+      exit(0);
+
+      Z poziomu linii komend:
+      ===================================
+
+      Aby utworzyć potok nazwany w terminalu wpisujemy:
+
+      mkfifo [-m mode] file_name
+
+      gdzie:
+            mode      - prawa dostępu
+            file_name - nazwa potoku
+
+      Aby usunąć potok nazwany w terminalu wpisujemy:
+
+      unlink file_name
+
+      gdzie:
+            file_name - nazwa potoku
+
+      Przykład:
+      ...
+      user@user:~$ mkfifo 0644 potok
+      ...
+      user@user:~$ unlink potok
+
+
+=================================================================================

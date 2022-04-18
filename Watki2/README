@@ -1,0 +1,59 @@
+=================================================================================
+Autor: Dawid Dobrowolski,                                      Krakow, 01.06.2021
+=================================================================================
+
+* Zawartosc:
+============
+
+Katalog zawiera program w jezyku C z Zestawu 10 dotyczącego watkow:
+---------------------------------------------------------------------------------
+I.Programy są implementacją algorytmu piekarni oraz algorytmu Petersona wykonujący
+ sekcje krytyczną dla N wątków.
+
+---------------------------------------------------------------------------------
+
+* Jak uruchomic programy:
+=========================
+Katalog zawiera program Makfile do kompilacji oraz linkowania powyzszych
+programow, a takze jego czyszczenia.
+
+  ->Aby skompilowac wszystkiego programy,nalezy wykonac:
+        make all
+
+  ->Aby wyczyscic zawartosc katalogu (usunac zbedne pliki), nalezy wykonac:
+        make clean
+
+---------------------------------------------------------------------------------
+
+* Odpowiedzi na pytania do zestawu:
+===================================
+I     Dlaczego dwa procesy nie mają jednocześnie dostępu do sekcji krytycznej?
+
+      Ponieważ założenie algorytmu piekarni jest oparte na kolejce FIFO, wątek
+      z najmniejszym aktualnie numerem, który stara się o wejście do sekcji
+      krytycznej wejdzi tam jako pierwszy.
+      Rywalizacja o sekcje krytyczną sprowadza się do sprawdzenia zamiarów
+      rywali, analizując współdzielone tablice. Jeśli analizowana pozycja
+      odnosi się do wątku, który jest w trakcie wybierania to będzie czekać na
+      wybór numeru.
+      W następnej fazie następuje sprawdzanie stanu potencjalnego rywala
+      w pętli while i jeśli wątek ma najmniejszy numer z wątków rywalizujących
+      o sekcje krytyczną to do niej wchodzi a reszta czeka.
+
+II    Dlaczego algorytm nie prowadzi do zakleszczenia?
+
+ 		  Ponieważ każdy wątek ma priorytet przy dostępie do zasobów.
+
+III   Dlaczego algorytm nie prowadzi do zagłodzenia?
+
+      Każdy wątek mimo, że czeka dowolną ilość razy aby wejść do sekcji
+      krytycznej i pomimo że gdy mógłby być zwnowiony ale wybierany jest
+      inny czekający wątek, to prędzej czy później wejdzie do sekcji krytycznej
+
+IV    Jakie minimalne warunki muszą zostać spełnione przez kompilator i model
+      pamięci aby algorytm działał poprawnie?
+
+      Aby algorytm działał poprawnie kompilator musi stosować bariery pamięci,
+      natomiast model pamięci musi posiadać spójność sekwencyjną, możemy
+      dowolną liczbę zapisać atomowo.
+=================================================================================

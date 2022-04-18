@@ -1,0 +1,131 @@
+=================================================================================
+Autor: Dawid Dobrowolski,                                      Krakow, 31.05.2021
+=================================================================================
+
+* Zawartosc:
+============
+
+Katalog zawiera 2 programy w jezyku C z Zestawu 07 dotyczącego pamięci dzielonej:
+---------------------------------------------------------------------------------
+I.Program jest implementacją serwera i klienta, wykorzystując kolejki komunikatów.
+  Klient pobiera z wejścia działania a(operator)b i wysyla komunikat do serwera,
+  który wykonuje działanie i odsyła wynik.
+
+  dostępne operatory:{+,-,*,/}
+
+  Program składa się z 5 modułów:
+                                  1)  serwer.c      - program implementujący serwer
+                                  2)  klient.c      - program implementujący klienta
+                                  3)  msg.h         - plik nagłówkowy
+                                  4)  libmsg.so     - biblioteka dynamiczna
+                                                      zawierająca implementacje
+                                                      funkcji dla kolejek
+                                  5)  libmsg.a      - biblioteka statyczna
+                                                      zawierająca implementacje
+                                                      funkcji dla kolejek
+
+
+---------------------------------------------------------------------------------
+
+* Jak uruchomic programy:
+=========================
+Katalog zawiera program Makfile do kompilacji oraz linkowania powyzszych
+programow, a takze jego czyszczenia.
+
+  ->Aby skompilowac wszystkiego programy,nalezy wykonac:
+        make all
+
+  ->Aby wyczyscic zawartosc katalogu (usunac zbedne pliki), nalezy wykonac:
+        make clean
+
+---------------------------------------------------------------------------------
+
+* Odpowiedzi na pytania do zestawu:
+===================================
+I     Opisać działanie, argumenty i wartość zwracaną przez funkcję mq_open
+      
+      mq_open służy do tworzenia lub otworzenia już istniejącej kolejki komunikatów
+      standardu POSIX.
+
+      deklaracja funkcji:
+      mqd_t mq_open(const char *name, int oflag);
+      mqd_t mq_open(const char *name, int oflag, mode_t mode,struct mq_attr *attr);
+
+      argumenty funkcji:
+
+      name    - nazwa tworzonej lub otwieranej kolejki komunikatów
+
+      oflag   - flagi dostępu z jakimi zostanie otwarta lub stworzona kolejka
+
+      najważniejsze to:
+
+      O_RDONLY      - otwiera kolejkę do odczytu
+
+      O_WRONLY      - otwiera kolejkę do zapisu
+
+      O_RDWR        - otwiera kolejkę do zapisu i odczytu
+
+      O_CREAT       - tworzy nową kolejkę
+
+      O_EXECL       - jeśli dana kolejka już istnieje a chcemy ją stworzyć to zwróci błąd
+
+      O_NONBLOCK    - otwiera kolejke w trybie nieblokującym
+
+      mode_t        - prawa dostępu
+
+      struct mq_attr *attr - struktura atrybutów kolejki 
+
+      funkcja mq_open deskryptor kolejki komunikatów w przypadku sukcesu, natomiast
+      w przypadku porażki zwraca (mqd_t)-1.
+
+II    Opisać działanie, argumenty i wartość zwracaną przez funkcję mq_send i mq_receive
+      
+      mq_send służy do wysłania komunikatów,jego deklaracja przedstawia się następująco:
+
+      int mq_send(mqd_t mqdes, const char *msg_ptr,size_t msg_len, unsigned int msg_prio);
+
+      Argumenty funkcji:
+
+      mqdes     -   deskryptor do kolejki komunikatów do której wysyłamy komunikat
+
+      msg_ptr   -   wskaznik na komunikat do wyslania
+
+      msg_len   -   długość komunikatu
+
+      msg_prio  -   priorytet komunikatu
+
+      W przypadku sukcesu zwraca 0, natomiast w przypadku porażki zwraca -1.
+
+      ---------------------------------------------------------------------------------------
+
+      mq_receive służy do odbierania komunikatów,jego deklaracja przedstawia się następująco:
+
+      ssize_t mq_receive(mqd_t mqdes, char *msg_ptr,size_t msg_len, unsigned int *msg_prio);
+
+
+      Argumenty funkcji, jak w przypadku mq_send natomiast msg_len musi być większa od rozmiaru
+      komunikatu.
+      
+
+      W przypadku sukcesu zwraca 0, natomiast w przypadku porażki zwraca -1.
+
+III   Czy kolejki komunikatów standardu POSIX są widoczne w systemie plików, gdzie?
+
+      Kolejki komunikatow standardu POSIX są widoczne w systemie plików,
+      aby zobaczyć istniejące kolejki musimy wejść do /dev/mqueue i użyć komendy
+      ls.
+
+IV    Jak otrzymać informacje o parametrach kolejki komunikatów?
+
+      Aby otrzymać informacje o parametrach kolejki komunikatów, możemy użyć
+      funkcji mq_getattr().
+      Funkcja ta zwraca strukturę mq_attr, która jest zdefiniowana następująco:
+
+      struct mq_attr {
+              long mq_flags;      /* Opcje: 0 lub O_NONBLOCK */
+              long mq_maxmsg;     /* Maksymalna liczba komunikatow w kolejce */
+              long mq_msgsize;    /* Maksymalny rozmiar komunikatu (w bajtach) */
+              long mq_curmsgs;    /* Liczba komunikatow aktualnie w kolejce */
+          };
+
+=================================================================================

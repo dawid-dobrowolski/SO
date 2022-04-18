@@ -1,0 +1,178 @@
+=================================================================================
+Autor: Dawid Dobrowolski,                                      Krakow, 20.05.2021
+=================================================================================
+
+* Zawartosc:
+============
+
+Katalog zawiera 2 programy w jezyku C z Zestawu 07 dotyczącego pamięci dzielonej:
+---------------------------------------------------------------------------------
+I.Program jest testem sprawdzającym funkcjonowanie biblioteki dynamicznej
+  dotyczącej pamięci dzielonej.
+
+  Program składa się z 3 modułów:
+                                  1)  shmuse.c      - program główny
+                                  2)  libshmem.so   - biblioteka dynamiczna
+                                  3)  shmem.h       - plik nagłówkowy
+
+  Program przyjmuje jeden jedno/dwuliterowy argument, który przy użyciu biblioteki
+  dynamicznej wykonuje poniższe operacje związane z pamięcią dzieloną:
+
+
+ c size             -         Tworzy segment pamięci dzielonej o rozmiarze size
+                              bajtów.
+
+ d                  -         Usuwa segment pamięci dzielonej
+
+ r                  -         Wypisuje zawartość pamięci dzielonej na standardowe
+                              wyjście.
+
+ w < input.txt      -         opiuje zawartość standardowego wejścia do pamięci
+                              dzielonej. Sprawdzić rozmiar segmentu.
+
+ i                  -         Wypisuje informacje o pamięci dzielonej.
+
+ default            -         Wypisuje informacje o użyciu tego programu.
+
+
+II.Program jest implementacją problemu Producenta i Konsumenta dla N-elementowego
+   bufora cyklicznego.
+
+    Program składa się z 5 modułów:
+                                    1)  glowny.c        - program główny
+                                    2)  producent.c     - producent
+                                    3)  konsument.c     - konsument
+                                    4)  shmuse.h        - plik nagłówkowy
+                                    5)  sem.h           - plik nagłówkowy
+                                    6)  libsem.a        - biblioteka statyczna semaforów
+                                    7)  libshmem.so     - biblioteka dynamiczna pamięci dzielonej
+
+
+---------------------------------------------------------------------------------
+
+* Jak uruchomic programy:
+=========================
+Katalog zawiera program Makfile do kompilacji oraz linkowania powyzszych
+programow, a takze jego czyszczenia.
+
+  ->Aby skompilowac wszystkiego programy,nalezy wykonac:
+        make all
+
+  ->Aby wyczyscic zawartosc katalogu (usunac zbedne pliki), nalezy wykonac:
+        make clean
+
+---------------------------------------------------------------------------------
+
+* Odpowiedzi na pytania do zestawu:
+===================================
+I  Szczegółowo opisz działanie semaforów z zadaniu 3.
+	Semafory w zadniu 3 zapewniają nam synchronizacje a przy tym możliwość
+	zrealizowania bufora cyklicznego.	
+	
+	W zadaniu 3 mamy dwa semafory:
+	1.Blokuje zapis,gdy bufor jest pełny
+	  Jego wartość początkowa to rozmiar bufora cyklicznego
+	  Natomiast jego aktualna wartość to liczba pustych/wolnych miejsc
+	  
+	2.Blokuje odczyt,gdy bufor jest pusty
+	  Wartość początkowa to 0 odpowiadająca ze nic nie ma do zapisu jeszcze
+	  Natomiast aktualna wartość semafora to liczba zapełnionych miejsc,
+	  w których są aktualnie dane zapisane przeez producenta.  	
+	
+
+II  Podać w pseudokodzie uogólnienie rozwiązania problemu z zadania 3.
+    na przypadek wielu producentów i konsumentów.
+
+    // Pseudokod dla problemu Producenta i Konsumenta z buforem cyklicznym.
+    // Wspolny bufor do przesylania danych znajduje sie w pamieci dzielonej.
+    // Dostep do bufora jest synchronizowany semaforami.
+    #define N ?
+    // Rozmiar bufora
+    typdef struct { ... } Towar; // Definicja typu dla jednostek towaru
+    Towar bufor[N];
+    // Bufor mogacy pomiescic N jednostek towaru
+    int wstaw = 0, wyjmij = 0;
+    // Pozycje wstawiania oraz wyjmowania towaru
+    // z bufora (mozna umiescic w pamieci dzielonej)
+    semaphore PROD = N;   // Semafor do wstrzymywania Producenta
+    semaphore KONS = 0;   // Semafor do wstrzymywania Konsumenta
+    semaphore WYKL1 = 1;  // Semafor do wzajemnego wykluczania Producenta
+    semaphore WYKL2 =1;   // Semafor do wzajemnego wykluczania Konsumenta
+
+    // Proces Producent
+    // ----------------
+    P(WYK1);
+    Towar towarProd;
+    while (1) {
+    // Produkcja towaru
+    P(PROD);
+    bufor[wstaw] = towarProd;
+    wstaw = (wstaw + 1) % N;
+    V(KONS);
+    }
+    V(WYK1);
+    
+    // Proces Konsument
+    // ----------------
+    P(WYK2);
+    Towar towarKons;
+    while (1) {
+    P(KONS);
+    towarKons = bufor[wyjmij];
+    wyjmij = (wyjmij + 1) % N;
+    V(PROD);
+    // Konsumpcja towaru
+    }
+    V(WYK2);
+
+
+
+
+III W jaki sposób niezależne procesy mają dostęp do tego samego segmentu
+    pamięci dzielonej?
+
+    Niezależne procesy mają dostęp do tego samego segmentu pamięci dzielonej,
+    dzięki możliwości jej odwzorowania przy pomocy funkcji mmap.
+    Taki proces po uwcześniejszym otworzeniu pamięci dzielonej, może odwzorować
+    obszar pamięci dzielonej w wirtualną przestrzeń adresową procesu,należy
+    pamiętać o rzutowaniu.
+
+
+IV   Czym jest biblioteka dynamiczna? Jakie są jej zalety?
+
+    Biblioteka statyczna to archiwum zawierająca jakieś pliki, które w szczególności
+    są plikami obiektowymi.Do tworzenia i modyfikowania bibliotek statycznych służy
+    narzędzie ar.
+
+    Zalety:
+            1) Łatwość w tworzeniu i modyfikacji biblioteki
+            2) Kontrola poprawności biblioteki
+            3) Dołączane są danego pliku wykonawczego tylko te pliki z biblioteki
+               które zawierają implementacje poszukiwanych funkcji, które nie są
+               zdefiniowane w programie.
+
+V  JJak utworzyć bibliotekę dynamiczną? Jak jej używać? Jakie są nazwy plików, które są bibliotekami dynamicznymi?
+
+Aby utworzyć bibliotekę statyczną musimy:
+
+    1)Stworzyć plik *.c z implementacją funkcji
+
+    2)Stworzyć odpowiedni plik nagłówkowy *.h
+
+    3)Skompilować nasz plik źródłowy *.c do pliku obiektowego *.o
+
+    4)Dodać plik obiektowy .o do biblioteki używająć narzędzia ar
+
+      ar rv lib*.a *.o
+
+Aby użyć biblioteki statycznej w danym programie należy skompilować program
+z odpowiednimi opcjami.
+
+gcc -L. program.x -l*
+
+      gdzie:
+      -L. {dzięki tej opcji gcc będzie szukało biblioteki w katalogu bierzącym}
+      -l* {dołączy bibliotekę o nazwie *}
+
+
+=================================================================================
